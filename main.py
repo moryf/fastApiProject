@@ -1,10 +1,13 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+# 1. Import all the necessary components
+from models.database import SessionLocal, engine, Base
 from models.User import User
-from models.database import SessionLocal
-
 from schemas.user import UserCreate
+
+# 2. Add the magic line that creates the database tables
+Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 def get_db():
@@ -21,9 +24,6 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
 
-# In main.py
-
-# ... (imports and other code) ...
 
 @app.post("/users/")
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
@@ -32,11 +32,9 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_user)
 
+
     return db_user
 
-# In main.py
-
-# ... (imports and other code) ...
 
 @app.put("/users/{user_id}")
 def update_user(user_id: int, user: UserCreate, db: Session = Depends(get_db)):
@@ -48,10 +46,6 @@ def update_user(user_id: int, user: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_user)
     return db_user
-
-# In main.py
-
-# ... (imports and other code) ...
 
 @app.delete("/users/{user_id}")
 def delete_user(user_id: int, db: Session = Depends(get_db)):
